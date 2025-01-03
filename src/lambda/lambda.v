@@ -4,7 +4,7 @@ import net.http
 import os
 import json
 
-type Handler = fn (string) !string
+type Handler = fn (Context, string) !string
 
 const runtime_api = os.getenv('AWS_LAMBDA_RUNTIME_API')
 
@@ -16,16 +16,18 @@ pub fn start(handler Handler) ! {
 	for {
 		// Get the next request
 		next_request := next()!
-		request_id := next_request.header.get_custom('lambda-runtime-aws-request-id')!
+
+		// Create the context
+		ctx := Context.new(next_request.header.get_custom('lambda-runtime-aws-request-id')!)
 
 		// Handle the request
-		response := handler(next_request.body) or {
-			failure(request_id, err)!
+		response := handler(ctx, next_request.body) or {
+			failure(ctx.request_id, err)!
 			continue
 		}
 
 		// Send the success response
-		success(request_id, response)!
+		success(ctx.request_id, response)!
 	}
 }
 

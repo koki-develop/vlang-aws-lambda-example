@@ -11,9 +11,12 @@ fn main() {
 	lambda.start(handler)!
 }
 
-fn handler(event string) !string {
+fn handler(ctx lambda.Context, event string) !string {
 	input := json.decode(Input, event)!
+
+	// Print the input and context
 	println('input: ${input}')
+	println('ctx: ${ctx}')
 	flush_stdout()
 
 	if input.success {
