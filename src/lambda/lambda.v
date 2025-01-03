@@ -18,7 +18,9 @@ pub fn start(handler Handler) ! {
 		next_request := next()!
 
 		// Create the context
-		ctx := Context.new(next_request.header.get_custom('lambda-runtime-aws-request-id')!)
+		ctx := Context.new(next_request.header.get_custom('lambda-runtime-aws-request-id') or {
+			return error('failed to get request id from header')
+		})
 
 		// Handle the request
 		response := handler(ctx, next_request.body) or {
@@ -36,7 +38,7 @@ fn next() !http.Response {
 	endpoint := 'http://${runtime_api}/2018-06-01/runtime/invocation/next'
 	response := http.get(endpoint)!
 	if response.status() != .ok {
-		return error(response.body)
+		return error('failed to get next request with status: ${response.status()}')
 	}
 
 	return response
@@ -47,7 +49,7 @@ fn success(request_id string, data string) ! {
 	endpoint := 'http://${runtime_api}/2018-06-01/runtime/invocation/${request_id}/response'
 	response := http.post(endpoint, data)!
 	if response.status() != .accepted {
-		return error(response.body)
+		return error('failed to send success response with status: ${response.status()}')
 	}
 }
 
@@ -60,6 +62,6 @@ fn failure(request_id string, err IError) ! {
 	})
 	response := http.post(endpoint, body)!
 	if response.status() != .accepted {
-		return error(response.body)
+		return error('failed to send failure response with status: ${response.status()}')
 	}
 }
