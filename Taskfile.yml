@@ -24,6 +24,7 @@ tasks:
           --provenance=false \
           -t {{.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/{{.ECR_REPOSITORY_NAME}}:latest \
           --platform=linux/amd64 \
+          --file docker/Dockerfile \
           .
   deploy:
     deps: [build-push]

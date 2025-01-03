@@ -25,6 +25,6 @@ RUN v -prod -o ./main .
 FROM public.ecr.aws/lambda/provided:al2023
 
 COPY --from=builder /var/task/main ${LAMBDA_TASK_ROOT}/main
-COPY bootstrap ${LAMBDA_RUNTIME_DIR}/bootstrap
+COPY docker/bootstrap ${LAMBDA_RUNTIME_DIR}/bootstrap
 
 CMD ["main"]
