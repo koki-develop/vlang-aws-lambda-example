@@ -1,0 +1,35 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  LAMBDA_FUNCTION_NAME: vlang-aws-lambda-example
+  ECR_REPOSITORY_NAME: vlang-aws-lambda-example
+  AWS_ACCOUNT_ID:
+    sh: aws sts get-caller-identity --query Account --output text
+
+tasks:
+  build-push:
+    cmds:
+      - |
+        aws ecr get-login-password \
+          --region us-east-1 \
+          | docker login \
+            --username AWS \
+            --password-stdin \
+            {{.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com
+      - |
+        docker buildx build \
+          --push \
+          --provenance=false \
+          -t {{.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/{{.ECR_REPOSITORY_NAME}}:latest \
+          --platform=linux/amd64 \
+          .
+  deploy:
+    deps: [build-push]
+    cmds:
+      - |
+        aws lambda update-function-code \
+          --function-name {{.LAMBDA_FUNCTION_NAME}} \
+          --image-uri {{.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/{{.ECR_REPOSITORY_NAME}}:latest \
+          --publish
