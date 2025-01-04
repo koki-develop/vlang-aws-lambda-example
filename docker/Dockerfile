@@ -6,6 +6,9 @@ RUN dnf install -y \
       gcc \
       libatomic
 
+# NOTE: Temporary workaround for `library 'atomic' not found` error when running `v install` (as of V 0.4.9)
+RUN ln -s /usr/lib64/libatomic.so.1 /usr/lib64/libatomic.so
+
 # Install vlang
 # See: https://github.com/vlang/v#installing-v-from-source
 RUN git clone --depth=1 https://github.com/vlang/v /vlang/v \
@@ -16,6 +19,9 @@ RUN git clone --depth=1 https://github.com/vlang/v /vlang/v \
 # ---
 
 FROM vlang AS builder
+
+COPY v.mod v.mod
+RUN v install
 
 COPY . .
 RUN v -prod -o ./main .

@@ -3,5 +3,7 @@ Module {
 	description: ''
 	version: '0.0.0'
 	license: 'MIT'
-	dependencies: []
+	dependencies: [
+		'https://github.com/koki-develop/v-lambda.git@0.1.0'
+	]
 }
